@@ -2,8 +2,6 @@
 logs
 *.log
 
-bin
-
 # Runtime data
 pids
 *.pid
