@@ -1,6 +1,7 @@
 # slack-o365-calendar
-Comeback soon!
 [![Build Status](https://travis-ci.org/sedouard/slack-o365-calendar.svg?branch=master)](https://travis-ci.org/sedouard/slack-o365-calendar)
+
+Comeback soon!
 
 # Contributing
 
