@@ -11,7 +11,13 @@ router.get('/', function (req, res) {
 
 router.get('/success', function (req, res) {
     res.render('index', {
-        title: 'Logged in!'
+        title: 'Logged in! '
+    });
+});
+
+router.get('/failed', function (req, res) {
+    res.render('index', {
+        title: 'Failed to login!!'
     });
 });
 
