@@ -10,6 +10,7 @@
     "bluebird": "^2.10.2",
     "body-parser": "^1.14.1",
     "bunyan": "^1.5.1",
+    "chrono-node": "^1.0.6",
     "cookie": "^0.2.2",
     "cookie-parser": "^1.4.0",
     "crc": "^3.3.0",
@@ -17,6 +18,7 @@
     "express": "~4.13.1",
     "express-session": "^1.11.3",
     "jade": "~1.11.0",
+    "moment": "^2.10.3",
     "mongodb": "^2.0.45",
     "morgan": "~1.6.1",
     "nconf": "^0.8.1",
@@ -25,7 +27,9 @@
     "redis": "^2.1.0",
     "rsvp": "^3.1.0",
     "serve-favicon": "~2.3.0",
-    "stylus": "0.42.3"
+    "slack-client": "^1.4.1",
+    "stylus": "0.42.3",
+    "winston": "^1.0.0"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
