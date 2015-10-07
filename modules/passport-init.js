@@ -24,14 +24,12 @@ function setupPassport () {
     responseType: nconf.get('responseType'),
     responseMode: nconf.get('responseMode'),
     skipUserProfile: nconf.get('skipUserProfile'),
-    //scope: ['Calendars.Read']
+    scope: ['https://outlook.office.com/calendars.read']
     };
 
     return new RSVP.Promise(function (resolve, reject){
         passport.use(new OIDCStrategy(settings,
         function(iss, sub, profile, accessToken, refreshToken, done) {
-            console.log('Example: Email address we received was: ', profile.email);
-
             return resolve({
                 iss: iss,
                 sub: sub,
