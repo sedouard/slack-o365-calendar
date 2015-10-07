@@ -7,7 +7,7 @@ module.exports = function (grunt) {
         require('load-grunt-tasks')(grunt, {scope: ['devDependencies', 'dependencies']});
     }
 
-    var files = ['routes/**/*.js', 'public/javascripts/**/*.js', 'public/javascripts/**/*.js'];
+    var files = ['routes/**/*.js', 'app.js', 'public/javascripts/**/*.js', 'public/javascripts/**/*.js'];
     // Tagged builds get their own folders. live builds just go to live folder
     var cdnPath = process.env.RELEASE_VERSION ? process.env.RELEASE_VERSION : 'live';
 
@@ -45,8 +45,26 @@ module.exports = function (grunt) {
                     config: '.beautifyrc'
                 }
             }
+        },
+        watch: {
+          scripts: {
+            files: files,
+            tasks: ['start'],
+            options: {
+              spawn: false,
+            },
+          },
+        },
+        shell: {
+            options: {
+                stderr: true
+            },
+            target: {
+                command: 'node ./bin/www'
+            }
         }
     });
 
     grunt.registerTask('test', ['jshint', 'jscs', 'jsbeautifier:test']);
+    grunt.registerTask('start', ['test', 'shell']);
 };
