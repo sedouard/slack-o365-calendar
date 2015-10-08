@@ -1,12 +1,9 @@
-var express = require('express'),
-    passport = require('passport'),
-    bunyan = require('bunyan'),
+var passport = require('passport'),
     nconf = require('../config'),
     OIDCStrategy = require('passport-azure-ad').OIDCStrategy,
     RSVP = require('RSVP');
 
-var MongoClient = require('mongodb').MongoClient
-  , assert = require('assert');
+var MongoClient = require('mongodb').MongoClient;
 
 // Connection URL
 var url = nconf.get('mongo_connection'),
@@ -27,7 +24,7 @@ function setupPassport () {
     scope: ['https://outlook.office.com/calendars.read']
     };
 
-    return new RSVP.Promise(function (resolve, reject){
+    return new RSVP.Promise(function (resolve){
         passport.use(new OIDCStrategy(settings,
         function(iss, sub, profile, accessToken, refreshToken, done) {
             return resolve({
@@ -74,7 +71,7 @@ function registerUser (db, profileData) {
             console.log('already registered user');
             console.log(user.accessToken);
 
-            if (user.accessToken != profileData.accessToken) {
+            if (user.accessToken !== profileData.accessToken) {
                 console.log('update a registered user');
                 profileData.profile.accessToken = profileData.accessToken;
                 profileData.profile.refreshToken = profileData.refreshToken;
@@ -96,6 +93,14 @@ function registerUser (db, profileData) {
         return profileData.done(null, profileData.profile);
     });
 
+}
+
+function findByEmail(email) {
+    dbConnect()
+    .then(function (connection){
+        var users = connection.collection('users');
+        users.findOne({email: email});
+    });
 }
 
 
