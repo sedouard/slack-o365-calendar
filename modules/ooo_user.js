@@ -2,13 +2,16 @@
 var logger = require('./logger'),
     moment = require('moment'),
     chrono = require('chrono-node'),
-    RSVP = require('rsvp');
+    RSVP = require('rsvp'),
+    nconf = require('../config.js');
 
 var https = require("https");
 var MongoClient = require('mongodb').MongoClient;
-var mongo_url = "mongodb://MongoLab-rj:4rEBWb.CqOGPSoLjJ5.5xoeSr2U59nnWHhJdt7lkY4U-@ds034348.mongolab.com:34348/MongoLab-rj";
+var mongo_url = nconf.get("mongo_connection");
 
 function __isOOO(email, cb) {
+
+  console.log("Checking OOO " + email + "...........");
 
   var startTime = new Date();
   startTime.setHours(0,0,0,0);
