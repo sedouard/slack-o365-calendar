@@ -2,7 +2,79 @@
 var logger = require('./logger'),
     moment = require('moment'),
     chrono = require('chrono-node'),
-    RSVP = require('rsvp');
+    RSVP = require('rsvp'),
+    nconf = require('../config.js');
+
+var https = require("https");
+var MongoClient = require('mongodb').MongoClient;
+var mongo_url = nconf.get("mongo_connection");
+
+function __isOOO(email, cb) {
+
+  console.log("Checking OOO " + email + "...........");
+
+  var startTime = new Date();
+  startTime.setHours(0,0,0,0);
+  var endTime = new Date();
+  endTime.setHours(23,59,59,0);
+
+  MongoClient.connect(mongo_url, function(err, db) {
+    if (err) {
+      console.log(err);
+      cb(null, err);
+    } else {
+      console.log("Connected to db..");
+      var collection = db.collection('users');
+      collection.find({}).toArray(function(err, users) {
+        var found = false;
+        console.log("Processing users.. (" + users.length + ")");
+        for (var i in users) {
+          var user = users[i];
+          console.log(user);
+          if (user.email == email) {
+
+            found = true;
+            console.log("Found user match...");
+
+            var options = {
+              hostname: 'outlook.office.com',
+              path: '/api/v1.0/Me/CalendarView?startDateTime=' + startTime.toISOString() + '&endDateTime=' + endTime.toISOString(),
+              headers: { "Authorization": "Bearer " + user.accessToken }
+            };
+
+            var body = '';
+            https.get(options, function(response) {
+
+              response.on("data", function(data) {
+                body += data;
+              });
+
+              response.on("end", function() {
+                var now = Date.now();  
+                body = JSON.parse(body);
+                var events = body.value; 
+                for (var i in events) {
+                  var e = events[i];
+                  var start = new Date(e.Start);
+                  var end = new Date(e.End);
+                  if (start.getTime() <= now && end.getTime() > now && 
+                      (e.Subject.indexOf("ooo") != -1 || e.Subject.indexOf("oof") != -1)) {
+                    cb(null, true);
+                    return;
+                  }
+                }
+                cb(null, false);
+              });
+            });
+          }
+        }
+        if (!found) {
+          cb("user not found");
+        }
+      });
+    } 
+  });
+}
 
 /**
  * @module OOO_User
@@ -42,13 +114,13 @@ var OOO_User = (function () {
         var now = moment(),
             self = this;
         return new RSVP.Promise(function (resolve) {
-            var retVal = false;
-            retVal = (self.ooo_start && self.ooo_start.isBefore(now));
-            if (self.ooo_end) {
-                retVal = retVal && (self.ooo_end.isAfter(now));
-            }
-            console.log('RESOLVING WITH ' + retVal);
-            resolve(retVal);
+            __isOOO(self.email, function(err, result) {
+              if (err) {
+                console.log("ERROR fetch OOO status: " + err);
+              } else {
+                resolve(result);
+              }
+            });
         });
 
     };

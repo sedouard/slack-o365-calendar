@@ -73,9 +73,8 @@ var Bot = (function () {
         if (message.match(/who/i)) {
             retVal = this.announceOffline();
         }
-
-        return new RSVP.promise(function (resolve) {
-            return resolve(retVal);
+        return new RSVP.Promise(function (resolve) {
+            resolve(retVal);
         });
     };
     /**
