@@ -92,12 +92,13 @@ var Bot = (function () {
         var channelName = (channel && channel.is_channel) ? '#' : '';
         channelName = channelName + (channel ? channel.name : 'UNKNOWN_CHANNEL');
         var userName = (user && user.name) ? "@" + user.name : "UNKNOWN_USER";
+
         if (type === 'message' && (text !== null) && (channel !== null)) {
             // Channel is a direct message
             if (channel.is_im) {
                 logger.info("" + userName + " sent DM: " + text);
                 if (!this.ooo_users[userName]) {
-                    this.ooo_users[userName] = new OOO_User(userName);
+                    this.ooo_users[userName] = new OOO_User(userName, user.profile.email);
                 }
                 response = this.ooo_users[userName].handleMessage(text);
                 if (response) {
