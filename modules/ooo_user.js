@@ -12,7 +12,8 @@ var OOO_User = (function () {
      * @constructor
      * @param {string} username the name of the user
      */
-    function OOO_User(username) {
+    function OOO_User(username, email) {
+        this.email = email;
         this.username = username;
         this.STATUS_UNCONFIRMED = 'unconfirmed';
         this.STATUS_AWAITING_CONFIRMATION = 'awaiting_confirmation';
