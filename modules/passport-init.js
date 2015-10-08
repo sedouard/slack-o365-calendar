@@ -1,7 +1,12 @@
 var passport = require('passport'),
     nconf = require('../config'),
     OIDCStrategy = require('passport-azure-ad').OIDCStrategy,
-    RSVP = require('RSVP');
+    RSVP = require('RSVP'),
+    Bot = require('./bot'),
+    OOOUser = require('./ooo_user');
+
+var bot = new Bot();
+bot.start();
 
 var MongoClient = require('mongodb').MongoClient;
 
@@ -122,10 +127,30 @@ function setupSerializers() {
     });
 }
 
+function trackUsers() {
+    dbConnect()
+    .then(function (connection){
+        var users = connection.collection('users'),
+            find = RSVP.denodeify(users.find);
+        console.log('registering users....');
+        return find.call(users);
+    })
+    .then(function (users) {
+        users.forEach(function (user) {
+            console.log('registering... ' + user.email);
+            bot.ooo_users[user.email] = new OOOUser(user.email, user.email);
+        });
+    });
+}
+
 var connection;
 dbConnect()
 .then(function (db) {
     connection = db;
+    return trackUsers();
+
+})
+.then(function () {
     return setupPassport();
 })
 .then(function (profileData) {
