@@ -7,7 +7,7 @@ This little Slack Bot connects your Office 365 Calendar with your team Slack acc
 
 Create a file called `.config.json` and fill it out with your application secrets. You can also make each property an environment variable.
 
-```json
+```js
 {
   // The client ID provided for the Office 365 application
   "clientID": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
