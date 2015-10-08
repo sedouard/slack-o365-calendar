@@ -1,9 +1,8 @@
-var express = require('express'),
-    path = require('path'),
-    logger = require('./logger'),
+var logger = require('./logger'),
     nconf = require('../config'),
     Slack = require('slack-client'),
-    OOO_User = require('./ooo_user');
+    OOO_User = require('./ooo_user'),
+    RSVP = require('rsvp');
 /**
  * @module Bot
  */
@@ -32,27 +31,52 @@ var Bot = (function () {
         var retVal = 'The following users are out of office:\n';
         var found = false;
         users = users || Object.keys(this.ooo_users);
-        for (var x in users) {
-            if (this.ooo_users[users[x]] && this.ooo_users[users[x]].isOOO()) {
+        var promises = [],
+            self = this;
+        users.forEach(function (user){
+            if (self.ooo_users[user]) {
+                console.log('ANNOUNCE OFFLINE');
                 found = true;
-                retVal += "> " + users[x] + ": " + this.ooo_users[users[x]].message + "\n";
+                var promise = self.ooo_users[user].isOOO();
+                promises.push(promise);
+
+                promise.then(function (isOOO) {
+                    console.log('IS OOO RESOLVED WITH ' + isOOO);
+                    if (isOOO) {
+
+                        retVal += '> ' + user;
+                        if (self.ooo_users[user].message){
+                            retVal += ': ' + self.ooo_users[user].message + '\n';
+                        }
+                    }
+
+                    return retVal;
+                });
+
             }
-        }
-        return found ? retVal : '';
+        });
+
+        return RSVP.all(promises)
+        .then(function () {
+            return found ? retVal : '';
+        });
     };
     /**
      * Handle direct commands
      *
      * @param {object} channel
      * @param {string} message
-     * @return {string}
+     * @return {promise}
      */
     Bot.prototype.handleDirectCommand = function (channel, message) {
         var retVal = '';
         if (message.match(/who/i)) {
             retVal = this.announceOffline();
         }
-        return retVal;
+
+        return new RSVP.promise(function (resolve) {
+            return resolve(retVal);
+        });
     };
     /**
      * Function to be called on slack open
@@ -64,7 +88,7 @@ var Bot = (function () {
         var allChannels = this.slack.channels;
         for (id in allChannels) {
             if (allChannels[id].is_member) {
-                channels.push("#" + allChannels[id].name);
+                channels.push('#' + allChannels[id].name);
             }
         }
         var groups = [];
@@ -74,11 +98,11 @@ var Bot = (function () {
                 groups.push(allGroups[id].name);
             }
         }
-        logger.info("Welcome to Slack. You are @" + this.slack.self.name + " of " + this.slack.team.name);
-        logger.info("You are in: " + channels.join(', '));
-        logger.info("As well as: " + groups.join(', '));
+        logger.info('Welcome to Slack. You are @' + this.slack.self.name + ' of ' + this.slack.team.name);
+        logger.info('You are in: ' + channels.join(', '));
+        logger.info('As well as: ' + groups.join(', '));
         var messages = unreads === 1 ? 'message' : 'messages';
-        logger.info("You have " + unreads + " unread " + messages);
+        logger.info('You have ' + unreads + ' unread ' + messages);
     };
     /**
      * Handle an incoming message
@@ -88,22 +112,22 @@ var Bot = (function () {
         var channel = this.slack.getChannelGroupOrDMByID(message.channel);
         var user = this.slack.getUserByID(message.user);
         var response = '';
-        var type = message.type, ts = message.ts, text = message.text;
+        var type = message.type, text = message.text;
         var channelName = (channel && channel.is_channel) ? '#' : '';
         channelName = channelName + (channel ? channel.name : 'UNKNOWN_CHANNEL');
-        var userName = (user && user.name) ? "@" + user.name : "UNKNOWN_USER";
+        var userName = (user && user.name) ? '@' + user.name : 'UNKNOWN_USER';
 
         if (type === 'message' && (text !== null) && (channel !== null)) {
             // Channel is a direct message
             if (channel.is_im) {
-                logger.info("" + userName + " sent DM: " + text);
+                logger.info('' + userName + ' sent DM: ' + text);
                 if (!this.ooo_users[userName]) {
                     this.ooo_users[userName] = new OOO_User(userName, user.profile.email);
                 }
                 response = this.ooo_users[userName].handleMessage(text);
                 if (response) {
                     channel.send(response);
-                    logger.info("@" + this.slack.self.name + " responded to " + userName + " with \"" + response + "\"");
+                    logger.info('@' + this.slack.self.name + ' responded to ' + userName + ' with \'' + response + '\'');
                 }
             }
             else {
@@ -113,36 +137,41 @@ var Bot = (function () {
                     // Need to translate user id to username
                     var translatedUsers = [], matchedUser;
                     for (var x in matches) {
-                        matchedUser = this.slack.getUserByID(matches[x].replace('@', ''));
-                        if (matchedUser) {
-                            translatedUsers.push("@" + matchedUser.name);
+                        if (x % 1 === 0) {
+                            matchedUser = this.slack.getUserByID(matches[x].replace('@', ''));
+                            if (matchedUser) {
+                                translatedUsers.push('@' + matchedUser.name);
+                            }
                         }
                     }
                     if (translatedUsers) {
                         // If we are the mentioned user
-                        if (translatedUsers.indexOf("@" + this.slack.self.name) !== -1) {
+                        if (translatedUsers.indexOf('@' + this.slack.self.name) !== -1) {
                             response = this.handleDirectCommand(channel, text);
                         }
                         else {
                             // Get OOO responses for users
                             response = this.announceOffline(translatedUsers);
                         }
+
                         if (response) {
-                            channel.send(response);
-                            logger.info("@" + this.slack.self.name + " responded with \"" + response + "\"");
+                            response.then(function (response) {
+                                channel.send(response);
+                                logger.info('@' + this.slack.self.name + ' responded with \'' + response + '\'');
+                            });
                         }
                     }
                 }
             }
         }
         else {
-            var typeError = type !== 'message' ? "unexpected type " + type + "." : null;
+            var typeError = type !== 'message' ? 'unexpected type ' + type + '.' : null;
             var textError = text === null ? 'text was undefined.' : null;
             var channelError = channel === null ? 'channel was undefined.' : null;
             var errors = [typeError, textError, channelError].filter(function (element) {
                 return element !== null;
             }).join(' ');
-            logger.info("@" + this.slack.self.name + " could not respond. " + errors);
+            logger.info('@' + this.slack.self.name + ' could not respond. ' + errors);
         }
     };
     /**
@@ -157,7 +186,7 @@ var Bot = (function () {
             self.handleMessage(message);
         });
         this.slack.on('error', function (error) {
-            logger.error("Error: %s", error);
+            logger.error('Error: %s', error);
         });
         this.slack.login();
     };
