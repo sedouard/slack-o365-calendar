@@ -67,14 +67,28 @@ function registerUser (db, profileData) {
 
             var insert = RSVP.denodeify(users.insert);
 
-            return insert.call(users, profileData.profile)
+            return insert.call(users, profileData.profile);
         }
         else {
             console.log('============================');
-            console.log('already registered user:')
-            console.dir(user);
-            console.log('============================');
-            return user;
+            console.log('already registered user');
+            console.log(user.accessToken);
+
+            if (user.accessToken != profileData.accessToken) {
+                console.log('update a registered user');
+                profileData.profile.accessToken = profileData.accessToken;
+                profileData.profile.refreshToken = profileData.refreshToken;
+                console.log('new access token:');
+                console.log(profileData.profile.accessToken);
+                var update = RSVP.denodeify(users.update);
+                var criteria = {id:user.id};
+                var value = {$set: {accessToken:profileData.profile.accessToken}};
+                return update.call(users, criteria, value);
+            }else{
+                console.dir(user);
+                console.log('============================');
+                return user;
+            }
         }
     })
     .then(function () {
