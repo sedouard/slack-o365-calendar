@@ -3,6 +3,7 @@ html
   head
     title= title
     link(rel='stylesheet', href='https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/css/materialize.min.css')
+    link(href='https://fonts.googleapis.com/icon?family=Material+Icons', rel='stylesheet')
     script(src='http://code.jquery.com/jquery-2.1.4.min.js')
     script(src='https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/js/materialize.min.js')
   body
@@ -13,16 +14,18 @@ html
                 a(href='#' class='brand-logo center') Slack O365 Calendar
                 ul(id='nav-mobile' class='right')
                     li
-                        a(href='#') about
-    main
+                        a(href='https://github.com/sedouard/slack-o365-calendar')
+                            | Fork Me On Github
+                            i(class="material-icons left") call_split
+
         block content
 
     footer(class='page-footer')
             div(class='row')
                 div(class='col s12')
-                    p(class='white-text') Lorem ipsum
+                    p(class='white-text') A Partner Catalyst TED Project
             div(class='footer-copyright')
-                p © 2015 Team 3
+                p © 2015 Microsoft
 
 
 
