@@ -11,8 +11,6 @@ var mongo_url = nconf.get("mongo_connection");
 
 function __isOOO(email, cb) {
 
-  console.log("Checking OOO " + email + "...........");
-
   var startTime = new Date();
   startTime.setHours(0,0,0,0);
   var endTime = new Date();
@@ -20,10 +18,8 @@ function __isOOO(email, cb) {
 
   MongoClient.connect(mongo_url, function(err, db) {
     if (err) {
-      console.log(err);
       cb(null, err);
     } else {
-      console.log("Connected to db..");
       var collection = db.collection('users');
       collection.find({}).toArray(function(err, users) {
         var found = false;
@@ -50,18 +46,21 @@ function __isOOO(email, cb) {
               });
 
               response.on("end", function() {
-                var now = Date.now();  
-                body = JSON.parse(body);
-                var events = body.value; 
-                for (var i in events) {
-                  var e = events[i];
-                  var start = new Date(e.Start);
-                  var end = new Date(e.End);
-                  if (start.getTime() <= now && end.getTime() > now && 
-                      (e.Subject.indexOf("ooo") != -1 || e.Subject.indexOf("oof") != -1)) {
-                    cb(null, true);
-                    return;
-                  }
+                var now = Date.now();
+
+                if (body) {
+                    body = JSON.parse(body);
+                    var events = body.value;
+                    for (var i in events) {
+                      var e = events[i];
+                      var start = new Date(e.Start);
+                      var end = new Date(e.End);
+                      if (start.getTime() <= now && end.getTime() > now &&
+                          (e.Subject.indexOf("OOO") != -1 || e.Subject.indexOf("OOF") != -1)) {
+                        cb(null, true, e.BodyPreview);
+                        return;
+                      }
+                    }
                 }
                 cb(null, false);
               });
@@ -72,21 +71,21 @@ function __isOOO(email, cb) {
           cb("user not found");
         }
       });
-    } 
+    }
   });
 }
 
 /**
- * @module OOO_User
+ * @module OOOUser
  */
-var OOO_User = (function () {
+var OOOUser = (function () {
     /**
      * Constructor
      *
      * @constructor
      * @param {string} username the name of the user
      */
-    function OOO_User(username, email) {
+    function OOOUser(username, email) {
         this.email = email;
         this.username = username;
         this.STATUS_UNCONFIRMED = 'unconfirmed';
@@ -109,27 +108,27 @@ var OOO_User = (function () {
      *
      * @return {promise}
      */
-    OOO_User.prototype.isOOO = function () {
-
+    OOOUser.prototype.isOOO = function () {
         var now = moment(),
             self = this;
         return new RSVP.Promise(function (resolve) {
-            __isOOO(self.email, function(err, result) {
+            __isOOO(self.email, function(err, result, message) {
               if (err) {
                 console.log("ERROR fetch OOO status: " + err);
               } else {
+                console.log('MESSAGE: ' + message);
+                self.message = message;
                 resolve(result);
               }
             });
         });
-
     };
     /**
      * Gets the ms since last communication
      *
      * @return {integer}
      */
-    OOO_User.prototype.lastCommunication = function () {
+    OOOUser.prototype.lastCommunication = function () {
         return this.last_communication ? moment().diff(this.last_communication) : 0;
     };
     /**
@@ -138,7 +137,7 @@ var OOO_User = (function () {
      * @param {string} message The message to set
      * @return {string} A response for the user
      */
-    OOO_User.prototype.setMessage = function (message) {
+    OOOUser.prototype.setMessage = function (message) {
         this.message = message;
         return 'Setting your OOO Message to:\n' + message;
     };
@@ -148,7 +147,7 @@ var OOO_User = (function () {
      * @param {string} start A parsable date/time string
      * @return {string} A response for the user
      */
-    OOO_User.prototype.setStart = function (start) {
+    OOOUser.prototype.setStart = function (start) {
         var retVal = 'Unable to parse ' + start + ' into a valid date/time';
         var time;
         if (start) {
@@ -169,7 +168,7 @@ var OOO_User = (function () {
      * @param {string} end A parsable date/time string
      * @return {string} A response for the user
      */
-    OOO_User.prototype.setEnd = function (end) {
+    OOOUser.prototype.setEnd = function (end) {
         var retVal = 'Unable to parse ' + end + ' into a valid date/time';
         var time;
         if (end) {
@@ -199,7 +198,7 @@ var OOO_User = (function () {
      * @param {string} strDate The date string
      * @return {Moment}
      */
-    OOO_User.prototype.parseDate = function (strDate) {
+    OOOUser.prototype.parseDate = function (strDate) {
         var pDate = chrono.parseDate(strDate);
         return pDate ? moment(pDate) : moment.invalid();
     };
@@ -209,7 +208,7 @@ var OOO_User = (function () {
      * @param {string} message The raw message
      * @return {string[]}
      */
-    OOO_User.prototype.parseCommands = function (message) {
+    OOOUser.prototype.parseCommands = function (message) {
         var retVal = {};
         var splits = message.split(/(start:|end:|message:)/);
         var curCommand;
@@ -258,7 +257,7 @@ var OOO_User = (function () {
      *
      * @return {string}
      */
-    OOO_User.prototype.getHelp = function () {
+    OOOUser.prototype.getHelp = function () {
         var retVal = '';
         retVal = '*Out of Office Bot*\n\n';
         retVal += 'I can keep track of when you are out of the office and tell people that mention you.\n\n';
@@ -280,11 +279,10 @@ var OOO_User = (function () {
      * @param {string} message
      * @return {string}
      */
-    OOO_User.prototype.handleMessage = function (message) {
+    OOOUser.prototype.handleMessage = function (message) {
         var retVal = '',
             commands = this.parseCommands(message),
             self = this;
-        console.log('DEBUG1');
         if (message.match(/^help/i)) {
             retVal = this.getHelp();
         }
@@ -375,6 +373,6 @@ var OOO_User = (function () {
         this.last_communication = moment();
         return retVal;
     };
-    return OOO_User;
+    return OOOUser;
 })();
-module.exports = OOO_User;
+module.exports = OOOUser;

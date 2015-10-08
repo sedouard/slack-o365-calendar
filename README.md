@@ -1,44 +1,38 @@
 # slack-o365-calendar
 [![Build Status](https://travis-ci.org/sedouard/slack-o365-calendar.svg?branch=master)](https://travis-ci.org/sedouard/slack-o365-calendar)
 
-Comeback soon!
+This little Slack Bot connects your Office 365 Calendar with your team Slack account to check if you're out of office. To set yourself 'out of office' simply place a meeting on your calendar with the subject 'OOO' or 'OOF' and this bot will let any teammates who @mention you that you're out of of office.
 
-# Contributing
+# Configuration (.config.json)
 
-## Step 1 Create or Find an Issue
+Create a file called `.config.json` and fill it out with your application secrets. You can also make each property an environment variable.
 
-Create a new issue or find one on this repo. Comment "I'll work on this!" so we'll know you're working on it.
-
-## Step 2 Fork
-
-Create a fork of this repo into your profile
-
-## Step 3 Clone
-
+```json
+{
+  // The client ID provided for the Office 365 application
+  "clientID": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  // Client secret from the registration process for the Office 365 application
+  "clientSecret": "someSecret",
+  // MongoDB connection string
+  "mongo_connection": "<mongodb connection string>",
+  // Slack application token
+  "slack_token":"slack-token-here",
+  // --- SNIP: Below configuration elements are for developers and power users ---
+  // Return URL after the OAuth handshake has completed; safe to leave default
+  "returnURL": "http://localhost:3000/auth/openid/return",
+  // set to true for Azure Active Directory
+  "skipUserProfile": true,
+  // Metadata to use for the OAuth configuration with Azure 
+  "identityMetadata": "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",
+  // Use code-based authentication
+  "responseType": "code",
+  // Use the HTTP POST verb in the OAuth response instead of HTTP GET 
+  "responseMode": "form_post",
+  // Realm to submit to OAuth
+  "realm": "http://outlook.office.com/",
+  // Automatically reconnect if we lose connection to Slack
+  "slack_autoReconnect": true,
+  // Automatically mark bot as away/active based on activity
+  "slack_autoMark": true
+}
 ```
-# fork your url
-git clone https://github.com/<your username>/slack-o365-calendar.git
-gitt add remote upstream https://github.com/sedouard/slack-o365-calendar.git
-```
-
-## Step 4 Create a Feature
-
-Create a feature branch by going into your repo folder and doing
-
-`git checkout -b fix_or_feat_issue_number`
-
-## Step 5 Code!
-
-Do the code. Run `npm test` to ensure you're lint-free and follow code guidelines
-
-## Step 6 Commit, Push
-
-```
-git add <whatever files you want to add>
-git push origin fix_or_feat_issue_number
-```
-
-## Step 7 Create Pull Request
-
-Come back to this repo, and click the green 'Create Pull Request' button.
-

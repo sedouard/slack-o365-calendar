@@ -8,9 +8,6 @@ var express = require('express'),
     passport = require('passport');
 
 require('./modules/passport-init');
-var Bot = require('./modules/bot');
-var bot = new Bot();
-bot.start();
 
 // routes
 var routes = require('./routes/index'),
