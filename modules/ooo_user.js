@@ -47,17 +47,20 @@ function __isOOO(email, cb) {
 
               response.on("end", function() {
                 var now = Date.now();
-                body = JSON.parse(body);
-                var events = body.value;
-                for (var i in events) {
-                  var e = events[i];
-                  var start = new Date(e.Start);
-                  var end = new Date(e.End);
-                  if (start.getTime() <= now && end.getTime() > now &&
-                      (e.Subject.indexOf("OOO") != -1 || e.Subject.indexOf("OOF") != -1)) {
-                    cb(null, true);
-                    return;
-                  }
+
+                if (body) {
+                    body = JSON.parse(body);
+                    var events = body.value;
+                    for (var i in events) {
+                      var e = events[i];
+                      var start = new Date(e.Start);
+                      var end = new Date(e.End);
+                      if (start.getTime() <= now && end.getTime() > now &&
+                          (e.Subject.indexOf("OOO") != -1 || e.Subject.indexOf("OOF") != -1)) {
+                        cb(null, true, e.BodyPreview);
+                        return;
+                      }
+                    }
                 }
                 cb(null, false);
               });
@@ -109,10 +112,12 @@ var OOOUser = (function () {
         var now = moment(),
             self = this;
         return new RSVP.Promise(function (resolve) {
-            __isOOO(self.email, function(err, result) {
+            __isOOO(self.email, function(err, result, message) {
               if (err) {
                 console.log("ERROR fetch OOO status: " + err);
               } else {
+                console.log('MESSAGE: ' + message);
+                self.message = message;
                 resolve(result);
               }
             });
