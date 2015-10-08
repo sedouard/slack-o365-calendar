@@ -5,19 +5,22 @@ var express = require('express'),
 /* GET home page. */
 router.get('/', function (req, res) {
     res.render('index', {
-        title: 'Express'
+        title: 'Please login',
+        loggedIn: false
     });
 });
 
 router.get('/success', function (req, res) {
     res.render('index', {
-        title: 'Logged in! '
+        title: 'Logged in! o365 busy/free time will be sync\'d to slack ',
+        loggedIn: true
     });
 });
 
 router.get('/failed', function (req, res) {
     res.render('index', {
-        title: 'Failed to login!!'
+        title: 'Failed to login, please try again.',
+        loggedIn: false
     });
 });
 
