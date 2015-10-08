@@ -1,7 +1,53 @@
 # slack-o365-calendar
 [![Build Status](https://travis-ci.org/sedouard/slack-o365-calendar.svg?branch=master)](https://travis-ci.org/sedouard/slack-o365-calendar)
 
-Comeback soon!
+# Summary
+
+This project creates a bridge between out of office information on Office365 calendars and the Slack collaboration platform. Users can log in using a form hosted by the bot to synchronize their calendar information. After calendar information is linked, the bot will respond to mentions of a given user to inform other users in the channel that the mentioned user is out of office (or otherwise unavailable).
+
+# Configuration (.config.json)
+
+````
+{
+  // The client ID provided for the Office 365 application
+  "clientID": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  
+  // Client secret from the registration process for the Office 365 application
+  "clientSecret": "someSecret",
+  
+  // MongoDB connection string
+  "mongo_connection": "mongodb://user:password@something.mongolab.com:34348/MongoLab-rj",
+  
+  // Slack application token
+  "slack_token":"slack-token-here",
+  
+  // --- SNIP: Below configuration elements are for developers and power users ---
+  
+  // Return URL after the OAuth handshake has completed; safe to leave default
+  "returnURL": "http://localhost:3000/auth/openid/return",
+  
+  // ?
+  "skipUserProfile": true,
+  
+  // Metadata to use for the OAuth configuration with Azure 
+  "identityMetadata": "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",
+  
+  // Use code-based authentication
+  "responseType": "code",
+  
+  // Use the HTTP POST verb in the OAuth response instead of HTTP GET 
+  "responseMode": "form_post",
+  
+  // Realm to submit to OAuth
+  "realm": "http://outlook.office.com/",
+  
+  // Automatically reconnect if we lose connection to Slack
+  "slack_autoReconnect": true,
+  
+  // Automatically mark bot as away/active based on activity
+  "slack_autoMark": true
+}
+````
 
 # Contributing
 
