@@ -5,7 +5,7 @@ var express = require('express'),
 /* GET home page. */
 router.get('/', function (req, res) {
     res.render('index', {
-        title: 'Please login',
+        title: 'Please login to Sync Calendar to Slack!',
         loggedIn: false
     });
 });
