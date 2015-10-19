@@ -43,4 +43,4 @@ Head over to the [Office Dev Center](http://dev.office.com/) for an office API k
 
 # Running
 
-To run the app just do `npm start`, navigate to http://localhost:3000/login to authenticate to your Office 365 account. Create an even on your calendar - marking your vacation time with 'OOO' or 'OOF' in the title and an optional message in the event body. This slack bot will do the rest - letting your team mates know when you're out of office.
+To run the app just do `npm start`, navigate to http://localhost:3000/login to authenticate to your Office 365 account. Create an event on your calendar - marking your vacation time with 'OOO' or 'OOF' in the title and an optional message in the event body. This slack bot will do the rest - letting your teammates know when you're out of office.
