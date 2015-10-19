@@ -36,3 +36,11 @@ Create a file called `.config.json` and fill it out with your application secret
   "slack_autoMark": true
 }
 ```
+
+# API Keys
+
+Head over to the [Office Dev Center](http://dev.office.com/) for an office API key and secret. Then grab your key and secret for a Slack bot by heading over to the [slack bot page](https://api.slack.com/bot-users)
+
+# Running
+
+To run the app just do `npm start`, navigate to http://localhost:3000/login to authenticate to your Office 365 account. Create an even on your calendar - marking your vacation time with 'OOO' or 'OOF' in the title and an optional message in the event body. This slack bot will do the rest - letting your team mates know when you're out of office.
